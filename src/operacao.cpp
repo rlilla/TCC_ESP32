@@ -1,53 +1,40 @@
 #include "operacao.h"
 #include "parametros.h"
 
-Estados estado;
+EstadosAuto estadoAuto;
 
-extern parametros valoresAtuais;
-extern parametros par;
+selecionaModo_t Operacao::stModo;
+dadosOperacao_t Operacao::stDadosOperacao;
+statusOperacao_t Operacao::stStatusOperacao;
+operacao_t Operacao::stOperacao;
 
-void modoManual(){
-    
-
-}
-
-void modoAuto(){
-
-    switch(estado){
-        case INICIO:
-            if(operacao.iniciaAuto){
-                estado = AGUARDA_TEMPERATURA;
-            }
-            break;
-        case AGUARDA_TEMPERATURA:
-            if(valoresAtuais.temperatura >= par.temperatura){
-                estado = AGUARDA_VOLUME_INICIAL;
-            }
-            break;
-        case AGUARDA_VOLUME_INICIAL:
-
-            break;
-        case MONITORA_DIFERENCA:
-
-            break;
-        
-        case FINALIZA:
-
-            break;
-
-        default:
-
-            break;
-
-    }
-
-}
-
-void ciclico(){
-    if(operacao.modoManAuto){
-        modoAuto();
+void Operacao::loopOperacao(){
+    if (this->stModo.modoAuto){
+        this->modoAuto();
+    }else if (this->stModo.modoManual){
+        this->modoManual();
+    }else if (this->stModo.modoSemi){
+        this->modoSemi();
     }else{
-        estado = INICIO;
-        modoManual();
-    }
+        this->modoNeutro();
+    }  
+}
+
+void Operacao::modoManual(){
+    this->stStatusOperacao.valvulaEntrada = this->stOperacao.ligaValvulaEntrada;
+    this->stStatusOperacao.valvulaSaida = this->stOperacao.ligaValvulaSaida;
+}
+
+void Operacao::modoAuto(){
+    this->stStatusOperacao.valvulaEntrada = true;
+}
+
+void Operacao::modoNeutro(){
+    this->stStatusOperacao.valvulaEntrada = false;
+    this->stStatusOperacao.valvulaSaida = false;
+}
+
+void Operacao::modoSemi(){
+    this->stStatusOperacao.valvulaEntrada = (this->stOperacao.iniciaSemiEntrada & (this->stDadosOperacao.volumeEntradaAtual <= this->stDadosOperacao.volumeEntradaProg));
+    this->stStatusOperacao.valvulaSaida = (this->stOperacao.iniciaSemiSaida & (this->stDadosOperacao.volumeSaidaAtual <= this->stDadosOperacao.volumeSaidaProg));
 }

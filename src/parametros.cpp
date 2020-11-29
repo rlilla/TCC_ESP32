@@ -1,4 +1,6 @@
 #include "parametros.h"
+#include "definicoes.h"
+#include "operacao.h"
 
 Preferences pref;
 

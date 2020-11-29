@@ -12,17 +12,23 @@
 #include "operacao.h"
 #include "definicoes.h"
 
+
 const char* ssid="Casa 17";
 const char* pwd="caio1711";
 
-
-
+// Configuração do medidor de vazão 
 int pulsoLitro = 5880;
+// Variável para contagem dos pulsos
 int contador;
+// Variável para contagem em litros
 float litros=0;
+
 String values="{\"Volume Atual\":321}";
 parametros par;
 parametros valoresAtuais;
+
+// Instância para a classe de operação
+Operacao op;
 
 telas t1;
 int numTela;
@@ -36,12 +42,10 @@ void taskServer(void *pvParameter);
 void taskScreens(void *pvParameter);
 void taskOperation(void *pvParameter);
 void taskCalculations(void *pvParamater);
-
+void atualizaSaidas();
 
 void setup() {
-  pinMode(4,OUTPUT);
-  pinMode(2,OUTPUT);
-  pinMode(35, INPUT);
+  pinMode(VALV_ENTRADA_OUTPUT,OUTPUT);
   Serial.begin(9600);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid,pwd);
@@ -61,11 +65,14 @@ void setup() {
 
 void taskScreens(void *pvParameter){
   configura();
+  int tela=0;
   while(true){
     vTaskDelay(pdMS_TO_TICKS(500));
     t1.volumeEntradaAtual = litros;
     t1.volumeEntradaProgramado = 2.12;
-    selecionaTela(numTela, t1);  
+    if(op.stModo.modoAuto) tela=0;
+    if(op.stModo.modoManual) tela=2;
+    selecionaTela(tela, t1);  
   }  
 }
 
@@ -78,8 +85,12 @@ void taskServer(void *pvParameter){
 
 void taskOperation(void *pvParameter){
   while(true){
-    vTaskDelay(pdMS_TO_TICKS(100));
-    ciclico();
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    op.loopOperacao();
+    op.stDadosOperacao.volumeEntradaAtual = litros;
+    op.stDadosOperacao.volumeEntradaProg = 3;
+    op.stOperacao.iniciaSemiEntrada = true;
+    atualizaSaidas();
   }
 }
 
@@ -93,16 +104,12 @@ void taskCalculations(void *pvParameter){
 }
 
 void loop() {
-  
-  
-  
-  
-  
-  
   if(Serial.read() > 0) contador=0;
-  digitalWrite(2,HIGH);
-  delay(1000);
-  digitalWrite(2,LOW);
   delay(1000);
   Serial.println(numTela);
+}
+
+void atualizaSaidas(){
+  digitalWrite(VALV_ENTRADA_OUTPUT,op.stStatusOperacao.valvulaEntrada);
+  digitalWrite(VALV_SAIDA_OUTPUT,op.stStatusOperacao.valvulaSaida);
 }

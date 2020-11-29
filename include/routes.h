@@ -14,5 +14,12 @@ void handleSendPar(AsyncWebServerRequest *request);
 void handleReadPar(AsyncWebServerRequest *request);
 void handleReadActualValue(AsyncWebServerRequest *request);
 void handleChangeScreen(AsyncWebServerRequest *request);
-
+void handleModoManual(AsyncWebServerRequest *request);
+void handleModoAuto(AsyncWebServerRequest *request);
+void handleModoSemi(AsyncWebServerRequest *request);
+void handleModoNeutro(AsyncWebServerRequest *request);
+void handleLigaEntrada(AsyncWebServerRequest *request);
+void handleLigaSaida(AsyncWebServerRequest *request);
+void handleDesligaEntrada(AsyncWebServerRequest *request);
+void handleDesligaSaida(AsyncWebServerRequest *request);
 #endif

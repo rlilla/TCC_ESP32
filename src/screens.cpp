@@ -1,6 +1,7 @@
 #include "screens.h"
 #include "parametros.h"
 #include "definicoes.h"
+#include "operacao.h"
 
 SSD1306 display(ADDR_DISPLAY,PINO_SDA,PINO_SCL);
 
@@ -23,6 +24,9 @@ void selecionaTela(int numTela, telas t1){
         case 1:
             telaParametros(t1);
             break;
+        case 2:
+            telaModoManual(t1);
+            break;
         default:
             telaPrincipal(t1);
     }
@@ -33,6 +37,17 @@ void telaPrincipal(telas t1){
     display.drawString(0,0,"PRINCIPAL");
     display.drawString(0,15,t1.ip);
     display.drawString(0,25,"Vol. Ent.: " + String(t1.volumeEntradaAtual));
+    display.display();
+}
+
+void telaModoManual(telas t1){
+    String statusValvEntrada, statusValvSaida;
+    display.clear();
+    display.drawString(0,0,"MANUAL");
+    statusValvEntrada=Operacao::stStatusOperacao.valvulaEntrada?"ON":"OFF";
+    statusValvSaida=Operacao::stStatusOperacao.valvulaSaida?"ON":"OFF";
+    display.drawString(0,15,"Entrada:" + statusValvEntrada);
+    display.drawString(0,25,"Saida:" + statusValvSaida);
     display.display();
 }
 

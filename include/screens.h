@@ -18,6 +18,10 @@ void configura();
 void selecionaTela(int numTela, telas t1);
 void telaPrincipal(telas t1);
 void telaParametros(telas t1);
+void telaModoManual(telas t1);
+void telaModoSemi(telas t1);
+void telaModoAuto(telas t1);
+
 
 
 #endif
