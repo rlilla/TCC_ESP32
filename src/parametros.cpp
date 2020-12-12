@@ -3,27 +3,25 @@
 #include "operacao.h"
 
 Preferences pref;
+parametros Param::par;
 
-bool saveParameters(parametros par){
+bool Param::salvarParametros(){
     bool retorno = false;
     pref.begin("Par");
-    pref.putFloat("volEnt", par.volumeEntrada);
-    pref.putFloat("volSai", par.volumeSaidaInicial);
-    pref.putFloat("dif", par.diferencaMaxima);
-    pref.putFloat("temp", par.temperatura);
+    pref.putFloat("volEnt", Param::par.volumeEntrada);
+    pref.putFloat("volSai", Param::par.volumeSaidaInicial);
+    pref.putFloat("dif", Param::par.diferencaMaxima);
+    pref.putFloat("temp", Param::par.temperatura);
     pref.end();
     retorno = true;
     return retorno;
 }
 
-parametros readParameters(){
-    parametros par;
+void Param::lerParametros(){
     pref.begin("Par");
-    par.volumeEntrada = pref.getFloat("volEnt",0);
-    par.volumeSaidaInicial = pref.getFloat("volSai", 0);
-    par.diferencaMaxima = pref.getFloat("dif", 0);
-    par.temperatura = pref.getFloat("temp", 0);
+    Param::par.volumeEntrada = pref.getFloat("volEnt",0);
+    Param::par.volumeSaidaInicial = pref.getFloat("volSai", 0);
+    Param::par.diferencaMaxima = pref.getFloat("dif", 0);
+    Param::par.temperatura = pref.getFloat("temp", 0);
     pref.end();
-    return par;
 }
-

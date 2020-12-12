@@ -11,6 +11,15 @@ struct parametros{
     float temperatura;
 };
 
+class Param{
+public:
+    static parametros par;
+    static void lerParametros();
+    static bool salvarParametros();
+};
+
+
+
 bool saveParameters(parametros par);
 parametros readParameters();
 

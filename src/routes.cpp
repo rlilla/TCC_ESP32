@@ -27,29 +27,33 @@ void routesConfigure(){
 }
 
 void handleMain(AsyncWebServerRequest *request){
-    digitalWrite(4,!digitalRead(4));
-    String teste=request->getParam("par1",true)->value();
-    Serial.println(teste);
     request->send(200,"text/plain","OK");
 }
 
 void handleSendPar(AsyncWebServerRequest *request){
     String par1=request->getParam("parametros",true)->value(); 
     deserializeJson(doc,par1);
-    parametros par;
-    par.volumeEntrada = doc["volEntrada"];
-    par.volumeSaidaInicial = doc["volSaida"];
-    par.diferencaMaxima = doc["diferenca"];
-    par.temperatura = doc["temp"];
-    bool saved = saveParameters(par);
+    Param::par.volumeEntrada = doc["volEntrada"];
+    Param::par.volumeSaidaInicial = doc["volSaida"];
+    Param::par.diferencaMaxima = doc["diferenca"];
+    Param::par.temperatura = doc["temp"];
+    bool saved = Param::salvarParametros();
     String retorno = "OK";
     if(!saved) retorno = "NOK"; 
-    request->send(200,"text/plain","OK"); 
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain",retorno);
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleReadPar(AsyncWebServerRequest *request){
-    String par="{\"teste\":123}";
-    AsyncWebServerResponse *response = request -> beginResponse(200,"application/json",par);
+    Param::lerParametros();
+    doc["volEntrada"] = Param::par.volumeEntrada;
+    doc["volSaida"] = Param::par.volumeSaidaInicial;
+    doc["diferenca"] = Param::par.diferencaMaxima;
+    doc["temp"] = Param::par.temperatura;
+    String retornoPar;
+    serializeJson(doc,retornoPar);
+    AsyncWebServerResponse *response = request -> beginResponse(200,"application/json",retornoPar);
     response->addHeader("Access-Control-Allow-Origin","*");
     request->send(response);
 }
@@ -59,6 +63,11 @@ void handleReadActualValue(AsyncWebServerRequest *request){
     doc["volSaida"] = valoresAtuais.volumeSaidaInicial;
     doc["diferenca"] = valoresAtuais.diferencaMaxima;
     doc["temp"] = valoresAtuais.temperatura;
+    doc["modo"] = "SEM MODO";
+    if (Operacao::stModo.modoAuto) doc["modo"] = "AUTOMATICO";
+    if (Operacao::stModo.modoManual) doc["modo"] = "MANUAL";
+    if (Operacao::stModo.modoSemi) doc["modo"] = "SEMI AUTOMATICO";
+    if (Operacao::stModo.semModo) doc["modo"] = "SEM MODO";
     String retorno;
     serializeJson(doc,retorno);
     AsyncWebServerResponse *response = request -> beginResponse(200,"application/json",retorno);
@@ -68,53 +77,71 @@ void handleReadActualValue(AsyncWebServerRequest *request){
 
 void handleChangeScreen(AsyncWebServerRequest *request){
     numTela=request->getParam("tela",true)->value().toInt();
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleModoManual(AsyncWebServerRequest *request){
     Operacao::stModo.modoManual = true;
     Operacao::stModo.modoAuto = false;
     Operacao::stModo.modoSemi = false;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleModoAuto(AsyncWebServerRequest *request){
     Operacao::stModo.modoManual = false;
     Operacao::stModo.modoAuto = true;
     Operacao::stModo.modoSemi = false;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleModoSemi(AsyncWebServerRequest *request){
     Operacao::stModo.modoManual = false;
     Operacao::stModo.modoAuto = false;
     Operacao::stModo.modoSemi = true;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleModoNeutro(AsyncWebServerRequest *request){
     Operacao::stModo.modoManual = false;
     Operacao::stModo.modoAuto = false;
     Operacao::stModo.modoSemi = false;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleLigaEntrada(AsyncWebServerRequest *request){
     Operacao::stOperacao.ligaValvulaEntrada = true;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleLigaSaida(AsyncWebServerRequest *request){
     Operacao::stOperacao.ligaValvulaSaida = true;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleDesligaEntrada(AsyncWebServerRequest *request){
     Operacao::stOperacao.ligaValvulaEntrada = false;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }
 
 void handleDesligaSaida(AsyncWebServerRequest *request){
     Operacao::stOperacao.ligaValvulaSaida = false;
-    request->send(200,"text/plain","OK");
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
 }

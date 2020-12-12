@@ -27,6 +27,9 @@ void selecionaTela(int numTela, telas t1){
         case 2:
             telaModoManual(t1);
             break;
+        case 3:
+            telaModoSemi(t1);
+            break;
         default:
             telaPrincipal(t1);
     }
@@ -54,11 +57,19 @@ void telaModoManual(telas t1){
 void telaParametros(telas t1){
     display.clear();
     display.drawString(0,0,"PARAMETROS");
-    parametros par=readParameters();
-    display.drawString(0,10,"Vol. Ent.: " + String(par.volumeEntrada));
-    display.drawString(0,20,"Vol. Saida.: " + String(par.volumeSaidaInicial));
-    display.drawString(0,30,"Diferenca: " + String(par.diferencaMaxima));
-    display.drawString(0,40,"Temperatura: " + String(par.temperatura));
+    Param::lerParametros();
+    display.drawString(0,10,"Vol. Ent.: " + String(Param::par.volumeEntrada));
+    display.drawString(0,20,"Vol. Saida.: " + String(Param::par.volumeSaidaInicial));
+    display.drawString(0,30,"Diferenca: " + String(Param::par.diferencaMaxima));
+    display.drawString(0,40,"Temperatura: " + String(Param::par.temperatura));
     //display.drawFastImage(0,0,12,8,wifi1);
+    display.display();
+}
+
+void telaModoSemi(telas t1){
+    display.clear();
+    display.drawString(0,0,"SEMI AUTO");
+    display.drawString(0,15,t1.ip);
+    display.drawString(0,25,"Vol. Ent.: " + String(t1.volumeEntradaAtual));
     display.display();
 }

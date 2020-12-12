@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ESPmDNS.h>
 #include "screens.h"
 #include "routes.h"
 #include "parametros.h"
@@ -54,6 +55,8 @@ void atualizaSaidas();
 
 void setup() {
   pinMode(VALV_ENTRADA_OUTPUT,OUTPUT);
+  pinMode(SENSOR_ENTRADA_INPUT,INPUT);
+  pinMode(SENSOR_SAIDA_INPUT,INPUT);
   Serial.begin(9600);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid,pwd);
@@ -63,6 +66,7 @@ void setup() {
   }
   t1.ip=WiFi.localIP().toString();
   Serial.println(WiFi.localIP());
+   
   attachInterrupt(SENSOR_ENTRADA_INPUT,trataIntEntrada,RISING);  
   attachInterrupt(SENSOR_SAIDA_INPUT,trataIntSaida,RISING);  
 
@@ -70,6 +74,7 @@ void setup() {
   xTaskCreatePinnedToCore(taskServer,"Server Task",configMINIMAL_STACK_SIZE + 1024,NULL,4,NULL,0);
   xTaskCreatePinnedToCore(taskOperation,"Operation Task",configMINIMAL_STACK_SIZE + 1024,NULL,10,NULL,1);
   xTaskCreatePinnedToCore(taskCalculations,"Calculations Task",configMINIMAL_STACK_SIZE + 1024,NULL,15,NULL,1);
+ 
 }
 
 void taskScreens(void *pvParameter){
@@ -80,13 +85,17 @@ void taskScreens(void *pvParameter){
     t1.volumeEntradaAtual = litrosEntrada;
     t1.volumeSaidaAtual = litrosSaida;
     t1.volumeEntradaProgramado = 2.12;
+    tela = 1;
     if(op.stModo.modoAuto) tela=0;
+    if(op.stModo.modoSemi) tela=3;
     if(op.stModo.modoManual) tela=2;
     selecionaTela(tela, t1);  
   }  
 }
 
 void taskServer(void *pvParameter){
+  MDNS.begin("smartlub");
+  MDNS.addService("http","tcp",80);
   routesConfigure();
   while(true){
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -97,7 +106,7 @@ void taskOperation(void *pvParameter){
   while(true){
     op.stDadosOperacao.volumeEntradaAtual = litrosEntrada;
     op.stDadosOperacao.volumeSaidaAtual = litrosSaida;
-    op.stDadosOperacao.volumeEntradaProg = 3;
+    op.stDadosOperacao.volumeEntradaProg = Param::par.volumeEntrada;
     op.stOperacao.iniciaSemiEntrada = true;
     op.loopOperacao();
     atualizaSaidas();
