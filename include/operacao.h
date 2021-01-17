@@ -18,19 +18,16 @@ enum EstadosAuto{
     FINALIZA
 };
 
-enum EstadosSemi{
-    INICIO1,
-    AGUARDA_VOL_ENTRADA,
-    AGUARDA_VOL_SAIDA,
-    FINALIZA1
-};
+
 struct operacao_t{
     bool ligaValvulaEntrada;
     bool ligaValvulaSaida;
+    bool ligaValvulaByPass;
     bool modoManAuto;
     bool iniciaAuto;
     bool iniciaSemiEntrada;
     bool iniciaSemiSaida;
+    bool interrompeTroca;
 };
 
 struct statusOperacao_t{

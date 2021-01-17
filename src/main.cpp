@@ -107,6 +107,8 @@ void taskOperation(void *pvParameter){
     op.stDadosOperacao.volumeEntradaAtual = litrosEntrada;
     op.stDadosOperacao.volumeSaidaAtual = litrosSaida;
     op.stDadosOperacao.volumeEntradaProg = Param::par.volumeEntrada;
+    op.stDadosOperacao.volumeSaidaProg = Param::par.volumeSaidaInicial;
+    op.stDadosOperacao.diferencaMaxAtual = litrosEntrada - litrosSaida;
     op.stOperacao.iniciaSemiEntrada = true;
     op.loopOperacao();
     atualizaSaidas();
@@ -119,8 +121,6 @@ void taskCalculations(void *pvParameter){
     vTaskDelay(pdMS_TO_TICKS(50));  
     litrosEntrada = (float) contadorEntrada / (float) pulsoLitro;
     litrosSaida = (float) contadorSaida / (float) pulsoLitro;
-    valoresAtuais.volumeEntrada = litrosEntrada;
-    valoresAtuais.diferencaMaxima = valoresAtuais.volumeEntrada - valoresAtuais.volumeSaidaInicial;
   }
 }
 
