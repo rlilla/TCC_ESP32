@@ -28,6 +28,7 @@ struct operacao_t{
     bool iniciaSemiEntrada;
     bool iniciaSemiSaida;
     bool interrompeTroca;
+    bool simulaSensores;
 };
 
 struct statusOperacao_t{
@@ -44,6 +45,7 @@ struct dadosOperacao_t{
     float diferencaMaxAtual;
     float temperaturaProg;
     float temperaturaAtual;
+    int estadoAtual;
 };
 
 struct selecionaModo_t{

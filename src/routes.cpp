@@ -2,14 +2,18 @@
 #include <ArduinoJson.h>
 #include "parametros.h"
 #include "operacao.h"
+#include "pagina.h"
+
 
 extern parametros valoresAtuais;
 extern int numTela;
 AsyncWebServer server(80);
 StaticJsonDocument<200> doc;
 
+
 // Função para configurar as rota da API
 void routesConfigure(){
+    server.on("/",HTTP_GET,handleHTML);
     server.on("/sendPar",HTTP_POST,handleSendPar);
     server.on("/readPar",HTTP_GET,handleReadPar);
     server.on("/readActValues",HTTP_GET,handleReadActualValue);
@@ -28,7 +32,13 @@ void routesConfigure(){
     server.on("/finalizaEntradaSemi",HTTP_GET,handleFinalizaEntradaSemi);
     server.on("/iniciaSaidaSemi",HTTP_GET,handleIniciaSaidaSemi);
     server.on("/finalizaSaidaSemi",HTTP_GET,handleFinalizaSaidaSemi);
+    server.on("/habilitaSimulacao",HTTP_GET,handleHabilitaSimulacao);
+    server.on("/desabilitaSimulacao",HTTP_GET,handleDesabilitaSimulacao);
     server.begin();
+}
+
+void handleHTML(AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", index_html);
 }
 
 // Funcao para receber os parametros e salvar na memoria flash
@@ -61,8 +71,8 @@ void handleReadPar(AsyncWebServerRequest *request){
 }
 // Funcao para ler os valores atuais
 void handleReadActualValue(AsyncWebServerRequest *request){
-    doc["volEntrada"] = valoresAtuais.volumeEntrada;
-    doc["volSaida"] = valoresAtuais.volumeSaidaInicial;
+    doc["volEntrada"] = Operacao::stDadosOperacao.volumeEntradaAtual;
+    doc["volSaida"] = Operacao::stDadosOperacao.volumeSaidaAtual;
     doc["diferenca"] = valoresAtuais.diferencaMaxima;
     doc["temp"] = valoresAtuais.temperatura;
     doc["modo"] = "SEM MODO";
@@ -185,6 +195,20 @@ void handleIniciaSaidaSemi(AsyncWebServerRequest *request){
 // Funcao para desligar a valvula de saida em modo Semi Automatico
 void handleFinalizaSaidaSemi(AsyncWebServerRequest *request){
     Operacao::stOperacao.iniciaSemiSaida = false;
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
+}
+// Funcao para habilitar a simulacao dos sensores
+void handleHabilitaSimulacao(AsyncWebServerRequest *request){
+    Operacao::stOperacao.simulaSensores = true;
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
+}
+// Funcao para desabilitar a simulacao dos sensroes
+void handleDesabilitaSimulacao(AsyncWebServerRequest *request){
+    Operacao::stOperacao.simulaSensores = false;
     AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
     response->addHeader("Access-Control-Allow-Origin","*");
     request->send(response);

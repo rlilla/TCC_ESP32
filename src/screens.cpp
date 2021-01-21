@@ -3,19 +3,21 @@
 #include "definicoes.h"
 #include "operacao.h"
 
+// Inicializa o display SSD1306
 SSD1306 display(ADDR_DISPLAY,PINO_SDA,PINO_SCL);
 
 const unsigned char wifi1 [] = {
 0x18, 0x1C, 0x7C, 0x7C, 0xFE, 0xFE, 0xFE, 0x7C, 0x7C, 0x1C, 0x00, 0x00, 
 };
 
-
+// Configura display
 void configura(){
     display.init();
     display.clear();
     display.display();
 }
 
+// Funcao para selecionar a tela a ser mostrada no display
 void selecionaTela(int numTela, telas t1){
     switch(numTela){
         case 0:
@@ -35,14 +37,16 @@ void selecionaTela(int numTela, telas t1){
     }
 }
 
+// Tela modo Auto
 void telaPrincipal(telas t1){
     display.clear();
     display.drawString(0,0,"PRINCIPAL");
     display.drawString(0,15,t1.ip);
-    display.drawString(0,25,"Vol. Ent.: " + String(t1.volumeEntradaAtual));
+    display.drawString(0,25,"Vol. Ent.: " + String(Operacao::stDadosOperacao.volumeEntradaAtual));
+    display.drawString(0,35,"Vol. Saida: " + String(Operacao::stDadosOperacao.volumeSaidaAtual));
     display.display();
 }
-
+// Tela modo Manual
 void telaModoManual(telas t1){
     String statusValvEntrada, statusValvSaida;
     display.clear();
@@ -51,9 +55,11 @@ void telaModoManual(telas t1){
     statusValvSaida=Operacao::stStatusOperacao.valvulaSaida?"ON":"OFF";
     display.drawString(0,15,"Entrada:" + statusValvEntrada);
     display.drawString(0,25,"Saida:" + statusValvSaida);
+    display.drawString(0,35,"Vol. Ent.: " + String(Operacao::stDadosOperacao.volumeEntradaAtual));
+    display.drawString(0,45,"Vol. Saida: " + String(Operacao::stDadosOperacao.volumeSaidaAtual));
     display.display();
 }
-
+// Tela ao iniciar sem modo selecionado
 void telaParametros(telas t1){
     display.clear();
     display.drawString(0,0,"PARAMETROS");
@@ -65,11 +71,12 @@ void telaParametros(telas t1){
     //display.drawFastImage(0,0,12,8,wifi1);
     display.display();
 }
-
+// Tela modo semi
 void telaModoSemi(telas t1){
     display.clear();
     display.drawString(0,0,"SEMI AUTO");
     display.drawString(0,15,t1.ip);
-    display.drawString(0,25,"Vol. Ent.: " + String(t1.volumeEntradaAtual));
+    display.drawString(0,25,"Vol. Ent.: " + String(Operacao::stDadosOperacao.volumeEntradaAtual));
+    display.drawString(0,35,"Vol. Saida: " + String(Operacao::stDadosOperacao.volumeSaidaAtual));
     display.display();
 }
