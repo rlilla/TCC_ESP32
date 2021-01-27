@@ -9,7 +9,8 @@ extern parametros valoresAtuais;
 extern int numTela;
 AsyncWebServer server(80);
 StaticJsonDocument<200> doc;
-
+extern int contadorEntrada;
+extern int contadorSaida;
 
 // Função para configurar as rota da API
 void routesConfigure(){
@@ -34,6 +35,8 @@ void routesConfigure(){
     server.on("/finalizaSaidaSemi",HTTP_GET,handleFinalizaSaidaSemi);
     server.on("/habilitaSimulacao",HTTP_GET,handleHabilitaSimulacao);
     server.on("/desabilitaSimulacao",HTTP_GET,handleDesabilitaSimulacao);
+    server.on("/resetEntrada",HTTP_GET,handleResetEntrada);
+    server.on("/resetSaida",HTTP_GET,handleResetSaida);
     server.begin();
 }
 
@@ -73,13 +76,16 @@ void handleReadPar(AsyncWebServerRequest *request){
 void handleReadActualValue(AsyncWebServerRequest *request){
     doc["volEntrada"] = Operacao::stDadosOperacao.volumeEntradaAtual;
     doc["volSaida"] = Operacao::stDadosOperacao.volumeSaidaAtual;
-    doc["diferenca"] = valoresAtuais.diferencaMaxima;
+    doc["diferenca"] = Operacao::stDadosOperacao.diferencaMaxAtual;
     doc["temp"] = valoresAtuais.temperatura;
     doc["modo"] = "SEM MODO";
     if (Operacao::stModo.modoAuto) doc["modo"] = "AUTOMATICO";
     if (Operacao::stModo.modoManual) doc["modo"] = "MANUAL";
     if (Operacao::stModo.modoSemi) doc["modo"] = "SEMI AUTOMATICO";
     if (Operacao::stModo.semModo) doc["modo"] = "SEM MODO";
+    doc["valvEntrada"] = Operacao::stStatusOperacao.valvulaEntrada;
+    doc["valvSaida"] = Operacao::stStatusOperacao.valvulaSaida;
+    doc["estadoAtual"] = Operacao::stDadosOperacao.estadoAtual;
     String retorno;
     serializeJson(doc,retorno);
     AsyncWebServerResponse *response = request -> beginResponse(200,"application/json",retorno);
@@ -209,6 +215,19 @@ void handleHabilitaSimulacao(AsyncWebServerRequest *request){
 // Funcao para desabilitar a simulacao dos sensroes
 void handleDesabilitaSimulacao(AsyncWebServerRequest *request){
     Operacao::stOperacao.simulaSensores = false;
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
+}
+
+void handleResetEntrada(AsyncWebServerRequest *request){
+    contadorEntrada = 0;
+    AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
+    response->addHeader("Access-Control-Allow-Origin","*");
+    request->send(response);
+}
+void handleResetSaida(AsyncWebServerRequest *request){
+    contadorSaida = 0;
     AsyncWebServerResponse *response = request -> beginResponse(200,"text/plain","OK");
     response->addHeader("Access-Control-Allow-Origin","*");
     request->send(response);

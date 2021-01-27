@@ -30,4 +30,6 @@ void handleIniciaSaidaSemi(AsyncWebServerRequest *request);
 void handleFinalizaSaidaSemi(AsyncWebServerRequest *request);
 void handleHabilitaSimulacao(AsyncWebServerRequest *request);
 void handleDesabilitaSimulacao(AsyncWebServerRequest *request);
+void handleResetEntrada(AsyncWebServerRequest *request);
+void handleResetSaida(AsyncWebServerRequest *request);
 #endif

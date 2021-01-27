@@ -90,15 +90,28 @@ void Operacao::modoAuto(){
                 this->stOperacao.ligaValvulaSaida = true;
             }
             // Aguarda que o volume de entrada programado seja atingido ou que a troca seja interrompida
-            if(this->stOperacao.interrompeTroca || this->stDadosOperacao.volumeEntradaAtual >= this->stDadosOperacao.volumeEntradaProg){
+            if(this->stDadosOperacao.volumeEntradaAtual >= this->stDadosOperacao.volumeEntradaProg){
+                estadoAuto = FINALIZA;
+            }
+            if(this->stOperacao.interrompeTroca){
+                this->stOperacao.interrompeTroca = false;
+                estadoAuto = AGUARDA_ENTRADA;
+            }
+            break;
+        case AGUARDA_ENTRADA:
+            this->stDadosOperacao.estadoAtual = 4;
+            this->stOperacao.ligaValvulaEntrada = true;
+            this->stOperacao.ligaValvulaSaida = false;
+            if(this->stOperacao.interrompeTroca || (this->stDadosOperacao.volumeEntradaAtual >= this->stDadosOperacao.volumeEntradaProg)){
                 estadoAuto = FINALIZA;
             }
             break;
         case FINALIZA:
-            this->stDadosOperacao.estadoAtual = 4;
+            this->stDadosOperacao.estadoAtual = 5;
             this->stOperacao.interrompeTroca = false;
             this->stOperacao.ligaValvulaEntrada = false;
             this->stOperacao.ligaValvulaSaida = false;
+            estadoAuto = INICIO;
             break; 
     }
 }

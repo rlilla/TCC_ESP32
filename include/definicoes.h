@@ -2,7 +2,8 @@
 #define definicoes_h
 
 #define VALV_ENTRADA_OUTPUT 2
-#define VALV_SAIDA_OUTPUT 6
+#define VALV_SAIDA_OUTPUT 4
+#define RELE_OUTPUT 14
 #define SENSOR_ENTRADA_INPUT 35
 #define SENSOR_SAIDA_INPUT 34
 #define LIGA_SAIDA LOW

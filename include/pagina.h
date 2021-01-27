@@ -10,6 +10,14 @@ const char index_html[] = R"rawliteral(
 <SCRIPT>
 var teste;
 var simulaVolEntrada=0;
+var estados=[];
+estados[0] = "INICIO";
+estados[1] = "AGUARDA TEMP";
+estados[2] = "AGUARDA VOL INICIAL";
+estados[3] = "MONITORA DIFERENCA";
+estados[4] = "AGUARDA ENTRADA";
+estados[5] = "FINAL";
+
 function mudaTela(xx){
 	var api=new XMLHttpRequest();
 	console.log(api);
@@ -69,11 +77,17 @@ function lerValoresAtuais(){
 			resposta=api.responseText;
 			console.log(teste);
 			var valoresAtuais=JSON.parse(resposta);
-			document.getElementById("modoAtual").innerHTML = valoresAtuais["modo"];
+			indice = valoresAtuais["estadoAtual"];
+			if(valoresAtuais["modo"]=="AUTOMATICO"){
+				document.getElementById("modoAtual").innerHTML = valoresAtuais["modo"] +"\n" + estados[indice];
+			}else{
+				document.getElementById("modoAtual").innerHTML = valoresAtuais["modo"];
+			}
+			
 			document.getElementById("volEntradaAtual").innerHTML = valoresAtuais["volEntrada"].toFixed(2) + " L";
 			document.getElementById("volSaidaAtual").innerHTML = valoresAtuais["volSaida"].toFixed(2) + " L";
 			document.getElementById("diferencaAtual").innerHTML = valoresAtuais["diferenca"].toFixed(2) + " L";
-			document.getElementById("temperaturaAtual").innerHTML = valoresAtuais["temp"].toFixed(2) + " ºC";
+			document.getElementById("temperaturaAtual").innerHTML = valoresAtuais["temp"].toFixed(2) + " C";
 			console.log(valoresAtuais);	
 		}
 	}
@@ -164,7 +178,7 @@ setInterval(function(){
 			<a class="nav-link" onclick=mudaTela(0) href="#">Tela Principal</a>
 		</li>
 		<li class="nav-item active">
-			<a class="nav-link" onclick=mudaTela(1) href="#">Tela Parâmetros</a>
+			<a class="nav-link" onclick=mudaTela(1) href="#">Tela Parametros</a>
 		</li>
 	</ul>
 </nav>
@@ -173,9 +187,9 @@ setInterval(function(){
 	<div class="col">
 		Volume de Entrada<BR>
 		<INPUT TYPE=TEXT id="volEntrada"><BR>
-		Volume inicial de saída<BR>
+		Volume inicial de saida<BR>
 		<INPUT TYPE=TEXT id="volSaidaIni"><BR>
-		Diferença Máxima<BR>
+		Diferenca Maxima<BR>
 		<INPUT TYPE=TEXT id="diferenca"><BR>
 		Temperatura<BR>
 		<INPUT TYPE=TEXT id="temperatura"><BR><BR><BR>
@@ -190,9 +204,9 @@ setInterval(function(){
 	<div class="col">
 		Volume Entrada Atual
 		<p id="volEntradaAtual">???????</p>
-		Volume Saída Atual
+		Volume Saida Atual
 		<p id="volSaidaAtual">???????</p>
-		Diferença Atual
+		Diferenca Atual
 		<p id="diferencaAtual">???????</p>
 		Temperatura Atual
 		<p id="temperaturaAtual">???????</p>
@@ -203,16 +217,16 @@ setInterval(function(){
 		<INPUT TYPE=button class="btn btn-primary" value="Manual" onclick="alteraModo(0)">
 	</div>
 	<div class="col-sm">
-		<INPUT TYPE=button class="btn btn-primary" value="Abre Válvula Entrada" onclick="valvulaEntrada(1)">
+		<INPUT TYPE=button class="btn btn-primary" value="Abre Valvula Entrada" onclick="valvulaEntrada(1)">
 	</div>
 	<div class="col-sm">
-		<INPUT TYPE=button class="btn btn-primary" value="Fecha Válvula Entrada" onclick="valvulaEntrada(0)">
+		<INPUT TYPE=button class="btn btn-primary" value="Fecha Valvula Entrada" onclick="valvulaEntrada(0)">
 	</div>
 	<div class="col-sm">
-		<INPUT TYPE=button class="btn btn-primary" value="Abre Válvula Saída" onclick="valvulaSaida(1)">
+		<INPUT TYPE=button class="btn btn-primary" value="Abre Valvula Saida" onclick="valvulaSaida(1)">
 	</div>
 	<div class="col-sm">
-		<INPUT TYPE=button class="btn btn-primary" value="Fecha Válvula Saída" onclick="valvulaSaida(0)">
+		<INPUT TYPE=button class="btn btn-primary" value="Fecha Valvula Saida" onclick="valvulaSaida(0)">
 	</div>	
 </div>
 <div class="row bg-dark">
