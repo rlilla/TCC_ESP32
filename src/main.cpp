@@ -13,12 +13,19 @@
 #include "operacao.h"
 #include "definicoes.h"
 #include "PubSubClient.h"
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
+// Instancia para conexao com o sensor de temperatura DS18B20
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+// Configuracao para a conexao MQTT
 WiFiClient espClient;
 PubSubClient mqtt(espClient);
 const char* broker="broker.mqtt-dashboard.com";
 
-
+// Obejto JSON para enviar o valor atual
 StaticJsonDocument<200> valAtual;
 char buffer[1024];
 
@@ -64,10 +71,14 @@ void taskScreens(void *pvParameter);
 void taskOperation(void *pvParameter);
 void taskCalculations(void *pvParamater);
 void taskSimulaSensores(void *pvParameter);
+void taskTemperatura(void *pvParameter);
+
 // Funcao para atualizar as saidas ciclicamente de acordo com o status atual da classe Operacao
 void atualizaSaidas();
+
 // Funcao para reconectar ao broker MQTT caso a conexao caia
 void reconectaBroker();
+
 // Funcao callback chamada ao receber mensagem nos topicos subscritos
 void callback(char* topic, byte* message, unsigned int length){
   Serial.println(topic);
@@ -121,17 +132,24 @@ void setup() {
     Serial.print(".");
     delay(500);
   }
+
+  // Ler IP atual da conexão WIFI e envia para a serial para debug
   t1.ip=WiFi.localIP().toString();
   Serial.println(WiFi.localIP());
+  
   // Habilita interrupcoes de borda de subida para os sensores de vazao
   attachInterrupt(SENSOR_ENTRADA_INPUT,trataIntEntrada,RISING);  
   attachInterrupt(SENSOR_SAIDA_INPUT,trataIntSaida,RISING);  
+  
   // Cria tarefas RTOS
   xTaskCreatePinnedToCore(taskScreens,"Screen Task",configMINIMAL_STACK_SIZE + 1024,NULL,2,NULL,1);
   xTaskCreatePinnedToCore(taskServer,"Server Task",configMINIMAL_STACK_SIZE + 4096,NULL,15,NULL,0);
   xTaskCreatePinnedToCore(taskOperation,"Operation Task",configMINIMAL_STACK_SIZE + 1024,NULL,10,NULL,1);
   xTaskCreatePinnedToCore(taskCalculations,"Calculations Task",configMINIMAL_STACK_SIZE + 1024,NULL,15,NULL,1);
   xTaskCreatePinnedToCore(taskSimulaSensores,"Simulation Task",configMINIMAL_STACK_SIZE + 1024,NULL,1,NULL,1);
+  xTaskCreatePinnedToCore(taskTemperatura,"Temperature Task",configMINIMAL_STACK_SIZE + 1024,NULL,3,NULL,1);
+  
+  // Configura Servidor e Callback MQTT
   mqtt.setServer(broker,1883);
   mqtt.setCallback(callback);
 }
@@ -207,11 +225,6 @@ void loop() {
   mqtt.publish_P("smartlub/mqtt/atual",buffer,0);
   mqtt.loop();
   delay(2000);
-  //Serial.print(op.stOperacao.simulaSensores);
-  //Serial.print("-");
-  //Serial.print(op.stStatusOperacao.valvulaSaida);
-  //Serial.print("-");
-  //Serial.println(op.stDadosOperacao.estadoAtual);
 }
 
 void taskSimulaSensores(void *pvParameter){
@@ -228,6 +241,16 @@ void taskSimulaSensores(void *pvParameter){
   }
 }
 
+void taskTemperatura(void *pvParameter){
+  sensors.begin();
+  while(true){
+    sensors.requestTemperatures();
+    op.stDadosOperacao.temperaturaAtual = sensors.getTempCByIndex(0);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+
+// Função para atualizar as saídas das válvulas
 void atualizaSaidas(){
   // Monitora o comando para ligar cada uma das valvulas
   // Como o rele aciona com 0V na saida, utilizamos o comando negado
@@ -238,6 +261,7 @@ void atualizaSaidas(){
   digitalWrite(RELE_OUTPUT,1);
 }
 
+// Funcao para reconectar o broker caso a conexão caia
 void reconectaBroker(){
   while(!mqtt.connected()){
     if(mqtt.connect("SmartLub-Unisal")){
@@ -248,3 +272,4 @@ void reconectaBroker(){
     }
   }
 }
+

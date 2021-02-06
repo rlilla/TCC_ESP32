@@ -11,6 +11,7 @@
 #define ADDR_DISPLAY 0x3c
 #define PINO_SDA 21
 #define PINO_SCL 22
+#define ONE_WIRE_BUS 18
 
 struct valoresAtuais_t{
     float volumeEntrada;
