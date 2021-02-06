@@ -15,6 +15,12 @@
 #include "PubSubClient.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <FirebaseESP32.h>
+
+#define BANCO_HOST "https://esp32-cb328-default-rtdb.firebaseio.com/"
+#define BANCO_AUTH "yZi4MR8GwAdHaYU1uQfgD3dU0AtKIj00fjWkL5ZI"
+
+FirebaseData fbdo;
 
 // Instancia para conexao com o sensor de temperatura DS18B20
 OneWire oneWire(ONE_WIRE_BUS);
@@ -25,7 +31,7 @@ WiFiClient espClient;
 PubSubClient mqtt(espClient);
 const char* broker="broker.mqtt-dashboard.com";
 
-// Obejto JSON para enviar o valor atual
+// Objeto JSON para enviar o valor atual
 StaticJsonDocument<200> valAtual;
 char buffer[1024];
 
@@ -41,13 +47,8 @@ int contadorEntrada = 0;
 int contadorSaida = 0;
 
 // Variável para contagem em litros
-float litros=0;
 float litrosEntrada = 0;
 float litrosSaida = 0;
-
-String values="{\"Volume Atual\":321}";
-parametros par;
-parametros valoresAtuais;
 
 // Instância para a classe de operação
 Operacao op;
@@ -111,7 +112,7 @@ void callback(char* topic, byte* message, unsigned int length){
     Param::par.volumeSaidaInicial = doc["volSaida"];
     Param::par.diferencaMaxima = doc["diferenca"];
     Param::par.temperatura = doc["temp"];
-    bool saved = Param::salvarParametros();
+    Param::salvarParametros();
   }
 }
 
@@ -149,9 +150,20 @@ void setup() {
   xTaskCreatePinnedToCore(taskSimulaSensores,"Simulation Task",configMINIMAL_STACK_SIZE + 1024,NULL,1,NULL,1);
   xTaskCreatePinnedToCore(taskTemperatura,"Temperature Task",configMINIMAL_STACK_SIZE + 1024,NULL,3,NULL,1);
   
+  Firebase.begin(BANCO_HOST, BANCO_AUTH);
+  Firebase.reconnectWiFi(true);
+  Firebase.setReadTimeout(fbdo, 1000 * 60);
+  Firebase.setwriteSizeLimit(fbdo, "tiny");
+  Firebase.setFloatDigits(2);
+  Firebase.setDoubleDigits(6);
+  String path = "/Sensores";
+  bool resFB = Firebase.setFloat(fbdo,path+"/Entrada",123.3);
+  Serial.println(resFB);
+
   // Configura Servidor e Callback MQTT
   mqtt.setServer(broker,1883);
   mqtt.setCallback(callback);
+
 }
 
 void taskScreens(void *pvParameter){

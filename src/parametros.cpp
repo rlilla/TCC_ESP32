@@ -2,6 +2,7 @@
 #include "definicoes.h"
 #include "operacao.h"
 
+
 Preferences pref;
 parametros Param::par;
 

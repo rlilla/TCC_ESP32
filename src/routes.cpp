@@ -5,7 +5,6 @@
 #include "pagina.h"
 
 
-extern parametros valoresAtuais;
 extern int numTela;
 AsyncWebServer server(80);
 StaticJsonDocument<200> doc;
@@ -77,7 +76,7 @@ void handleReadActualValue(AsyncWebServerRequest *request){
     doc["volEntrada"] = Operacao::stDadosOperacao.volumeEntradaAtual;
     doc["volSaida"] = Operacao::stDadosOperacao.volumeSaidaAtual;
     doc["diferenca"] = Operacao::stDadosOperacao.diferencaMaxAtual;
-    doc["temp"] = valoresAtuais.temperatura;
+    doc["temp"] = Operacao::stDadosOperacao.temperaturaAtual;
     doc["modo"] = "SEM MODO";
     if (Operacao::stModo.modoAuto) doc["modo"] = "AUTOMATICO";
     if (Operacao::stModo.modoManual) doc["modo"] = "MANUAL";
