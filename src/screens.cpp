@@ -44,6 +44,7 @@ void telaPrincipal(telas t1){
     display.drawString(0,15,t1.ip);
     display.drawString(0,25,"Vol. Ent.: " + String(Operacao::stDadosOperacao.volumeEntradaAtual));
     display.drawString(0,35,"Vol. Saida: " + String(Operacao::stDadosOperacao.volumeSaidaAtual));
+    display.drawString(0,45,"Temp: " + String(Operacao::stDadosOperacao.temperaturaAtual));
     display.display();
 }
 // Tela modo Manual

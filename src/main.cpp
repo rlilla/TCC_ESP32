@@ -15,12 +15,7 @@
 #include "PubSubClient.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <FirebaseESP32.h>
-
-#define BANCO_HOST "https://esp32-cb328-default-rtdb.firebaseio.com/"
-#define BANCO_AUTH "yZi4MR8GwAdHaYU1uQfgD3dU0AtKIj00fjWkL5ZI"
-
-FirebaseData fbdo;
+#include "banco.h"
 
 // Instancia para conexao com o sensor de temperatura DS18B20
 OneWire oneWire(ONE_WIRE_BUS);
@@ -73,6 +68,7 @@ void taskOperation(void *pvParameter);
 void taskCalculations(void *pvParamater);
 void taskSimulaSensores(void *pvParameter);
 void taskTemperatura(void *pvParameter);
+void taskFirebase(void *pvParameter);
 
 // Funcao para atualizar as saidas ciclicamente de acordo com o status atual da classe Operacao
 void atualizaSaidas();
@@ -145,22 +141,13 @@ void setup() {
   // Cria tarefas RTOS
   xTaskCreatePinnedToCore(taskScreens,"Screen Task",configMINIMAL_STACK_SIZE + 1024,NULL,2,NULL,1);
   xTaskCreatePinnedToCore(taskServer,"Server Task",configMINIMAL_STACK_SIZE + 4096,NULL,15,NULL,0);
-  xTaskCreatePinnedToCore(taskOperation,"Operation Task",configMINIMAL_STACK_SIZE + 1024,NULL,10,NULL,1);
+  xTaskCreatePinnedToCore(taskOperation,"Operation Task",configMINIMAL_STACK_SIZE + 4096,NULL,10,NULL,1);
   xTaskCreatePinnedToCore(taskCalculations,"Calculations Task",configMINIMAL_STACK_SIZE + 1024,NULL,15,NULL,1);
   xTaskCreatePinnedToCore(taskSimulaSensores,"Simulation Task",configMINIMAL_STACK_SIZE + 1024,NULL,1,NULL,1);
-  xTaskCreatePinnedToCore(taskTemperatura,"Temperature Task",configMINIMAL_STACK_SIZE + 1024,NULL,3,NULL,1);
-  
-  Firebase.begin(BANCO_HOST, BANCO_AUTH);
-  Firebase.reconnectWiFi(true);
-  Firebase.setReadTimeout(fbdo, 1000 * 60);
-  Firebase.setwriteSizeLimit(fbdo, "tiny");
-  Firebase.setFloatDigits(2);
-  Firebase.setDoubleDigits(6);
-  String path = "/Sensores";
-  bool resFB = Firebase.setFloat(fbdo,path+"/Entrada",123.3);
-  Serial.println(resFB);
+  xTaskCreatePinnedToCore(taskTemperatura,"Temperature Task",configMINIMAL_STACK_SIZE + 1024,NULL,5,NULL,1);
+  xTaskCreatePinnedToCore(taskFirebase,"Firebase Task",configMINIMAL_STACK_SIZE + 4096,NULL,3,NULL,1);
 
-  // Configura Servidor e Callback MQTT
+    // Configura Servidor e Callback MQTT
   mqtt.setServer(broker,1883);
   mqtt.setCallback(callback);
 
@@ -253,13 +240,32 @@ void taskSimulaSensores(void *pvParameter){
   }
 }
 
+// Funcao para medicao de temperatura
 void taskTemperatura(void *pvParameter){
   sensors.begin();
   while(true){
     sensors.requestTemperatures();
     op.stDadosOperacao.temperaturaAtual = sensors.getTempCByIndex(0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(3000));
   }
+}
+
+// Funcao para receber e enviar dados para o Firebase 
+void taskFirebase(void *pvParameter){
+  float oldLitrosEntrada = 0;
+  float oldLitrosSaida = 0;
+  float litrosEntradaAcum = lerLitroEntrada();
+  float litrosSaidaAcum = lerLitroSaida();
+  while(true){
+    if((op.stDadosOperacao.volumeEntradaAtual != oldLitrosEntrada) || (op.stDadosOperacao.volumeSaidaAtual != oldLitrosSaida)){
+      escreveLitroSaida(op.stDadosOperacao.volumeSaidaAtual + litrosSaidaAcum);
+      escreveLitroEntrada(op.stDadosOperacao.volumeEntradaAtual + litrosEntradaAcum);
+      oldLitrosEntrada = op.stDadosOperacao.volumeEntradaAtual;
+      oldLitrosSaida = op.stDadosOperacao.volumeSaidaAtual;
+    }
+    vTaskDelay(pdMS_TO_TICKS(5000));
+  }
+
 }
 
 // Função para atualizar as saídas das válvulas
